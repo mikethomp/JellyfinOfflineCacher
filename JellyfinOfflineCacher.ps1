@@ -1,3 +1,80 @@
+<#
+.SYNOPSIS
+Creates and manages offline Jellyfin media subscriptions for local playback.
+
+.DESCRIPTION
+JellyfinOfflineCacher.ps1 provides an interactive terminal interface for:
+- Searching Jellyfin media libraries
+- Creating offline media subscriptions
+- Downloading transcoded episodes or movies locally
+- Managing cached media
+- Playing cached media with VLC
+
+The script maintains a local subscription database and automatically syncs:
+- Movies
+- The next unplayed episodes of subscribed series
+
+Series synchronization downloads up to five unplayed episodes at a time,
+allowing lightweight offline viewing while minimizing storage usage.
+
+Downloaded media is stored under:
+
+~/Jellyfin/
+
+.PARAMETER JellyfinHost
+The hostname or IP address of the Jellyfin server (do not include "https://").
+For example: jellyfin.local or 192.168.1.10:8096
+
+.PARAMETER UserName
+The Jellyfin username used to query watched status and library access.
+
+.PARAMETER ApiKey
+The API key used to authenticate with the Jellyfin server. This key must have permission
+to query user information.
+
+.PARAMETER SyncSpecialsFirst
+Controls how Season 0 ("Specials") episodes are prioritized during syncing.
+
+By default:
+- Regular seasons are synced first
+- Specials are synced last
+
+When this switch is specified:
+- Specials are processed in normal Jellyfin season order
+
+.EXAMPLE
+.\JellyfinOfflineCacher.ps1 `
+    -JellyfinHost "jellyfin.example.com" `
+    -JellyfinUser "john" `
+    -ApiKey "YOUR_API_KEY"
+
+Launches the interactive offline caching manager using the specified
+Jellyfin account.
+
+.EXAMPLE
+.\JellyfinOfflineCacher.ps1 `
+    -JellyfinHost "media.local:8096" `
+    -JellyfinUser "alice" `
+    -ApiKey $ApiKey `
+    -SyncSpecialsFirst
+
+Runs the cacher and prioritizes syncing Season 0 specials before
+regular seasons.
+
+.NOTES
+Requirements:
+- PowerShell 7+
+- JellyfinPS module installed
+- VLC media player available in PATH
+- ffmpeg available in PATH
+
+Subscription Behavior:
+- Movies are always fully synced
+- Series sync only unplayed episodes
+- Up to 5 episodes are cached simultaneously
+- Old episodes are automatically removed after sync
+
+#>
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)][string]$JellyfinHost,
